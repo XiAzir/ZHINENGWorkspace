@@ -35,9 +35,9 @@
 #define DOA_PHAT_EPS         1e-6f
 
 // ── RTOS 任务栈（单位：字节）────────────────────────────────
-#define TASK_STACK_AUDIO     16384  // 原 2K，包含音频数据缓冲转移
-#define TASK_STACK_DOA       16384  // 原 4K，包含波达特征组算核心
-#define TASK_STACK_AI        65536  // 原 2K，修复 AI 神经层推演引发的爆栈 (64K满血保障)
+#define TASK_STACK_AUDIO     16384  // 包含音频数据缓冲转移
+#define TASK_STACK_DOA       16384  // 包含波达特征组算核心
+#define TASK_STACK_AI        32768  // ESP-DL v3 推理引擎需要更大栈空间
 #define TASK_STACK_DECISION  8192
 #define TASK_STACK_GUI       8192
 #define TASK_STACK_GUI_FAST  8192
