@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.16)
+set(IDF_TARGET esp32p4)
+if(NOT DEFINED ENV{IDF_PATH})
+    message(FATAL_ERROR "未找到 IDF_PATH 环境变量。如果是通过 VS Code 使用 CMake Tools 插件，请确保已配置 ESP-IDF 插件或在 ESP-IDF 终端中运行。如果是新建工程，可以按 F1 运行 'ESP-IDF: Add vscode configuration folder' 初始化环境。")
+endif()
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+project(audiosense-glasses)

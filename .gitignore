@@ -1,0 +1,15 @@
+# Build output
+build/
+managed_components/
+.cache/
+
+# IDE
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temp
+*.pyc
+__pycache__/
