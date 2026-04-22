@@ -143,5 +143,10 @@ void TaskOrientation_Run(void *arg) {
 
         mahony_update(s.gx, s.gy, s.gz, s.ax, s.ay, s.az, dt);
         orientation_yaw_set(yaw_deg_from_quaternion());
+
+        static uint32_t s_p0_cnt = 0;
+        if (++s_p0_cnt % 2000 == 0) {
+            ESP_LOGI(TAG, "[P0] stack_hwm=%u bytes", uxTaskGetStackHighWaterMark(NULL) * 4);
+        }
     }
 }

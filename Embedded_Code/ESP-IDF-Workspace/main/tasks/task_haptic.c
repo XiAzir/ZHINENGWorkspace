@@ -51,5 +51,10 @@ void TaskHaptic_Run(void *arg) {
         last_tick = now;
         ESP_LOGI(TAG, "Haptic lvl=%d waveform=%d cooldown=%ums",
                  d.level, waveform, (unsigned)cooldown_ms);
+
+        static uint32_t s_p0_cnt = 0;
+        if (++s_p0_cnt % 20 == 0) {
+            ESP_LOGI(TAG, "[P0] stack_hwm=%u bytes", uxTaskGetStackHighWaterMark(NULL) * 4);
+        }
     }
 }

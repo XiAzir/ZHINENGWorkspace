@@ -42,5 +42,10 @@ void TaskAudio_Run(void *arg) {
         if (xQueueSend(q_audio, &frame, 0) != pdTRUE) {
             // 队列满，丢弃当前帧（允许，DSP 任务处理不过来时正常现象）
         }
+
+        static uint32_t s_p0_cnt = 0;
+        if (++s_p0_cnt % 300 == 0) {
+            ESP_LOGI(TAG, "[P0] stack_hwm=%u bytes", uxTaskGetStackHighWaterMark(NULL) * 4);
+        }
     }
 }

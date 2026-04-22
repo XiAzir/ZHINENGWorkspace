@@ -26,6 +26,10 @@ void TaskGUI_Run(void *arg) {
         // 状态区（非箭头）只在 decision 到来时刷一次；快线程专注箭头
         drv_oled_draw_status(d.level, d.pred_class, d.confidence, d.doa_angle_deg);
 
+        static uint32_t s_p0_cnt = 0;
+        if (++s_p0_cnt % 100 == 0) {
+            ESP_LOGI(TAG, "[P0] stack_hwm=%u bytes", uxTaskGetStackHighWaterMark(NULL) * 4);
+        }
         ESP_LOGI(TAG,
                  "Lvl=%-8s Cls=%-8s Conf=%3.0f%% Rel=%+.1f Wld=%+.1f TTC=%4.1fs SPL=%.0fdBA%s",
                  s_level_text[d.level],

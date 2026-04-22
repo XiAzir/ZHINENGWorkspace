@@ -1,6 +1,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
+#include "esp_heap_caps.h"
 #include "math.h"
 #include "app_config.h"
 #include "app_types.h"
@@ -37,6 +38,7 @@ void TaskDecision_Run(void *arg) {
 
     AIResult_t       ai_in;
     DecisionResult_t out;
+    static uint32_t  s_p0_cnt = 0;
 
     for (;;) {
         if (xQueueReceive(q_ai_result, &ai_in, portMAX_DELAY) != pdTRUE) continue;
@@ -57,5 +59,14 @@ void TaskDecision_Run(void *arg) {
         xQueueSend(q_decision_gui,    &out, 0);
         xQueueSend(q_decision_haptic, &out, 0);
         xQueueSend(q_decision_ble,    &out, 0);
+
+        uint32_t now_ms = xTaskGetTickCount() * portTICK_PERIOD_MS;
+        ESP_LOGI(TAG, "[P0] e2e_ms=%u", (unsigned)(now_ms - ai_in.timestamp_ms));
+        if (++s_p0_cnt % 100 == 0) {
+            ESP_LOGI(TAG, "[P0] stack_hwm=%u bytes heap_free=%u psram_free=%u",
+                     uxTaskGetStackHighWaterMark(NULL) * 4,
+                     (unsigned)esp_get_free_heap_size(),
+                     (unsigned)heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
+        }
     }
 }

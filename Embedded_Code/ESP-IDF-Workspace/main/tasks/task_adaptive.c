@@ -1,6 +1,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
+#include "esp_heap_caps.h"
 #include "app_config.h"
 #include "app_types.h"
 #include "app_freertos.h"
@@ -25,5 +26,9 @@ void TaskAdaptive_Run(void *arg) {
         // 动态调整 IIR 截止频率或 Mel 特征的噪声减除参数
         dsp_noise_tracker_update(&noise_tracker);
         ESP_LOGD(TAG, "Noise baseline updated");
+        ESP_LOGI(TAG, "[P0] stack_hwm=%u bytes heap_free=%u psram_free=%u",
+                 uxTaskGetStackHighWaterMark(NULL) * 4,
+                 (unsigned)esp_get_free_heap_size(),
+                 (unsigned)heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
     }
 }

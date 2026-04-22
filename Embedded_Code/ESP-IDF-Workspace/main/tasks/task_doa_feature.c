@@ -8,6 +8,7 @@
 #include "app_types.h"
 #include "app_freertos.h"
 
+#include "esp_timer.h"
 #include "dsp_filter.h"
 #include "dsp_mel.h"
 #include "dsp_gcc_phat.h"
@@ -54,6 +55,7 @@ void TaskDOA_Run(void *arg) {
     static float log_mel[MEL_BINS];
     static float gcc[DSP_FFT_LEN];
     int   tdoa;
+    static uint32_t s_p0_cnt = 0;
 
     for (;;) {
         if (xQueueReceive(q_audio, &audio_in, portMAX_DELAY) != pdTRUE) continue;
@@ -84,7 +86,9 @@ void TaskDOA_Run(void *arg) {
         memcpy(s_mel_window + AUDIO_FRAME_LEN, filtered_ch0,
                AUDIO_FRAME_LEN * sizeof(float));
 
+        int64_t t_dsp0 = esp_timer_get_time();
         dsp_mel_compute(&g_mel, s_mel_window, log_mel);
+        int64_t t_dsp1 = esp_timer_get_time();
 
         // INT8 量化（roundf 与 Python 端 round_nearest 一致，避免截断偏差）
         int frame_slot = s_ring_write_idx * MEL_BINS;
@@ -97,6 +101,11 @@ void TaskDOA_Run(void *arg) {
         s_ring_write_idx = (s_ring_write_idx + 1) % MEL_FRAMES;
         if (s_ring_filled < MEL_FRAMES) s_ring_filled++;
         s_frames_since_infer++;
+
+        if (++s_p0_cnt % 300 == 0) {
+            ESP_LOGI(TAG, "[P0] dsp_mel_us=%lld stack_hwm=%u bytes",
+                     (t_dsp1 - t_dsp0), uxTaskGetStackHighWaterMark(NULL) * 4);
+        }
 
         // 威胁跟踪（复用 power_spec，避免二次 FFT）
         int   last_cls;

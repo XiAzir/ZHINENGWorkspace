@@ -26,5 +26,10 @@ void TaskGUI_Fast_Run(void *arg) {
         while (beta < -180.0f) beta += 360.0f;
 
         drv_oled_draw_arrow(beta);
+
+        static uint32_t s_p0_cnt = 0;
+        if (++s_p0_cnt % 300 == 0) {
+            ESP_LOGI(TAG, "[P0] stack_hwm=%u bytes", uxTaskGetStackHighWaterMark(NULL) * 4);
+        }
     }
 }

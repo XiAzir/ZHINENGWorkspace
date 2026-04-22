@@ -49,5 +49,10 @@ void TaskAI_Run(void *arg) {
 
         // 送决策队列
         xQueueSend(q_ai_result, &result, 0);
+
+        static uint32_t s_p0_cnt = 0;
+        if (++s_p0_cnt % 100 == 0) {
+            ESP_LOGI(TAG, "[P0] stack_hwm=%u bytes", uxTaskGetStackHighWaterMark(NULL) * 4);
+        }
     }
 }
