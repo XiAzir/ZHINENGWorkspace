@@ -47,7 +47,7 @@
 #define TASK_STACK_ORIENT    8192
 
 // ── 3DoF / GUI 节拍 ────────────────────────────────────────
-#define ORIENT_TICK_MS       5       // 200Hz IMU 读取 + Mahony 融合
+#define ORIENT_TICK_MS       5       // 目标 200Hz；低 FreeRTOS tick 下 task_orientation 至少等待 1 tick
 #define GUI_FAST_TICK_MS     16      // ≈62.5Hz 箭头渲染
 
 // ── 功能宏 ──────────────────────────────────────────────────

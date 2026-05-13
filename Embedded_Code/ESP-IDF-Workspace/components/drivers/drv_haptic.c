@@ -1,6 +1,5 @@
 #include "drv_haptic.h"
 #include "drv_i2c_bus.h"
-#include "driver/i2c_master.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 
@@ -21,23 +20,14 @@ static const char *TAG = "drv_haptic";
 #define REG_FEEDBACK     0x1A
 #define REG_CONTROL3     0x1D
 
-static i2c_master_dev_handle_t s_haptic_dev = NULL;
-
 esp_err_t drv_haptic_init(void) {
-    i2c_master_bus_handle_t bus = drv_i2c_bus_handle();
-    if (!bus) {
+    esp_err_t err = drv_i2c_bus_probe(DRV2605L_ADDR);
+    if (err == ESP_ERR_INVALID_STATE) {
         ESP_LOGE(TAG, "I2C bus not initialized; call drv_i2c_bus_init() first");
-        return ESP_ERR_INVALID_STATE;
+        return err;
     }
-
-    i2c_device_config_t dev_cfg = {
-        .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-        .device_address  = DRV2605L_ADDR,
-        .scl_speed_hz    = 400000,
-    };
-    esp_err_t err = i2c_master_bus_add_device(bus, &dev_cfg, &s_haptic_dev);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to add DRV2605L to I2C bus: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "DRV2605L probe failed: %s", esp_err_to_name(err));
         return err;
     }
 
@@ -69,11 +59,11 @@ init_fail:
 
 esp_err_t drv_haptic_write_reg(uint8_t reg, uint8_t val) {
     uint8_t buf[2] = {reg, val};
-    return i2c_master_transmit(s_haptic_dev, buf, 2, pdMS_TO_TICKS(100));
+    return drv_i2c_bus_write(DRV2605L_ADDR, buf, sizeof(buf), false);
 }
 
 esp_err_t drv_haptic_read_reg(uint8_t reg, uint8_t *val) {
-    return i2c_master_transmit_receive(s_haptic_dev, &reg, 1, val, 1, pdMS_TO_TICKS(100));
+    return drv_i2c_bus_write_read(DRV2605L_ADDR, &reg, 1, val, 1, false);
 }
 
 esp_err_t drv_haptic_play(uint8_t waveform_idx) {

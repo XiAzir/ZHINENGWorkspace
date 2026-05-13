@@ -5,10 +5,11 @@ idf_component_register(
         "drv_i2c_bus.c"
         "drv_haptic.c"
         "drv_imu.c"
+        "bmi270_context.c"
         "drv_ble.c"
         "drv_sim.c"
     INCLUDE_DIRS "."
-    REQUIRES driver log freertos esp_timer
+    REQUIRES driver log freertos esp_timer esp_rom
 )
 
 target_add_binary_data(${COMPONENT_LIB} "test_audio_car_horn.wav"   BINARY)

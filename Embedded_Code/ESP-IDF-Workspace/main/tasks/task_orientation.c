@@ -3,6 +3,7 @@
 #include "esp_log.h"
 #include "esp_timer.h"
 #include <math.h>
+#include <stdint.h>
 
 #include "app_config.h"
 #include "app_freertos.h"
@@ -21,6 +22,11 @@ static const char *TAG = "task_orient";
 
 static float q0 = 1.0f, q1 = 0.0f, q2 = 0.0f, q3 = 0.0f;
 static float ix = 0.0f, iy = 0.0f, iz = 0.0f;
+
+static TickType_t ms_to_ticks_at_least_one(uint32_t ms) {
+    TickType_t ticks = pdMS_TO_TICKS(ms);
+    return (ticks > 0) ? ticks : 1;
+}
 
 // 用加速度矢量估算初始 roll/pitch，Yaw 置 0（6 轴无磁力计给不出绝对方位）。
 // 用户之后的 Yaw 是"相对开机朝向"；体验上等价于上电瞬间按下"朝向归零"。
@@ -120,7 +126,7 @@ void TaskOrientation_Run(void *arg) {
             ax_sum += s.ax; ay_sum += s.ay; az_sum += s.az;
             init_samples++;
         }
-        vTaskDelay(pdMS_TO_TICKS(ORIENT_TICK_MS));
+        vTaskDelay(ms_to_ticks_at_least_one(ORIENT_TICK_MS));
     }
     if (init_samples > 0) {
         ImuSample_t avg = { .ax = ax_sum / init_samples,
@@ -133,7 +139,7 @@ void TaskOrientation_Run(void *arg) {
     uint32_t t_prev = (uint32_t)esp_timer_get_time();
     TickType_t next = xTaskGetTickCount();
     for (;;) {
-        vTaskDelayUntil(&next, pdMS_TO_TICKS(ORIENT_TICK_MS));
+        vTaskDelayUntil(&next, ms_to_ticks_at_least_one(ORIENT_TICK_MS));
 
         if (drv_imu_read(&s) != ESP_OK) continue;
         uint32_t t_now = s.timestamp_us;
