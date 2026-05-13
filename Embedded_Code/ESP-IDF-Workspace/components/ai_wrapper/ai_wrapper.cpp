@@ -104,5 +104,9 @@ void AI_Run(const int8_t *mel_feature, int *pred_class, float *confidence) {
     *pred_class = max_idx;
     *confidence = (float)max_val * scale;
 
+    // Softmax 输出理论范围 [0,1]，INT8 量化误差可能导致越界，clamp 修正
+    if (*confidence < 0.0f) *confidence = 0.0f;
+    if (*confidence > 1.0f) *confidence = 1.0f;
+
     ESP_LOGD(TAG, "预测类别=%d, 置信度=%.3f, exponent=%d", max_idx, *confidence, exp);
 }

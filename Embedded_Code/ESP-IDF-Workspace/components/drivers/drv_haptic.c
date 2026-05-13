@@ -35,16 +35,36 @@ esp_err_t drv_haptic_init(void) {
         .device_address  = DRV2605L_ADDR,
         .scl_speed_hz    = 400000,
     };
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus, &dev_cfg, &s_haptic_dev));
+    esp_err_t err = i2c_master_bus_add_device(bus, &dev_cfg, &s_haptic_dev);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to add DRV2605L to I2C bus: %s", esp_err_to_name(err));
+        return err;
+    }
+
+    uint8_t status = 0;
+    err = drv_haptic_read_reg(REG_STATUS, &status);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "DRV2605L status read failed before init: %s", esp_err_to_name(err));
+        goto init_fail;
+    }
+    ESP_LOGI(TAG, "DRV2605L status before init: 0x%02X", status);
 
     // DRV2605L 初始化序列（LRA 模式）
-    drv_haptic_write_reg(REG_MODE, 0x00);       // 退出待机
-    drv_haptic_write_reg(REG_LIBRARY, 0x06);    // LRA 库
-    drv_haptic_write_reg(REG_FEEDBACK, 0xB6);   // LRA 反馈控制
-    drv_haptic_write_reg(REG_CONTROL3, 0xA3);   // 开环驱动
+    err = drv_haptic_write_reg(REG_MODE, 0x00);       // 退出待机
+    if (err != ESP_OK) goto init_fail;
+    err = drv_haptic_write_reg(REG_LIBRARY, 0x06);    // LRA 库
+    if (err != ESP_OK) goto init_fail;
+    err = drv_haptic_write_reg(REG_FEEDBACK, 0xB6);   // LRA 反馈控制
+    if (err != ESP_OK) goto init_fail;
+    err = drv_haptic_write_reg(REG_CONTROL3, 0xA3);   // 开环驱动
+    if (err != ESP_OK) goto init_fail;
 
     ESP_LOGI(TAG, "DRV2605L init OK (shared I2C bus)");
     return ESP_OK;
+
+init_fail:
+    ESP_LOGE(TAG, "DRV2605L init failed during register write: %s", esp_err_to_name(err));
+    return err;
 }
 
 esp_err_t drv_haptic_write_reg(uint8_t reg, uint8_t val) {

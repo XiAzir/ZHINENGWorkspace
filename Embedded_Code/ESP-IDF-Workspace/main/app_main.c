@@ -45,6 +45,7 @@ void app_main(void) {
 
     // 2. 共享 I2C 总线（必须先于 haptic/imu）
     ESP_ERROR_CHECK(drv_i2c_bus_init());
+    drv_i2c_bus_log_known_devices();
 
     // 3. 驱动初始化
 #ifdef USE_SIMULATION
@@ -54,7 +55,16 @@ void app_main(void) {
     ESP_ERROR_CHECK(drv_pdm_dma_init(AUDIO_SAMPLE_RATE, AUDIO_FRAME_LEN, NUM_DMA_BUFFERS));
 #endif
     ESP_ERROR_CHECK(drv_oled_init());
-    ESP_ERROR_CHECK(drv_haptic_init());
+
+    // 开机 Logo 展示 2 秒
+    vTaskDelay(pdMS_TO_TICKS(2000));
+    drv_oled_clear();
+
+    esp_err_t haptic_err = drv_haptic_init();
+    if (haptic_err != ESP_OK) {
+        ESP_LOGW(TAG, "Haptic unavailable (%s); system continues without vibration.",
+                 esp_err_to_name(haptic_err));
+    }
 
     // IMU 初始化失败不致命：task_orientation 会降级为 yaw=0 桩模式
     esp_err_t imu_err = drv_imu_init();
