@@ -19,6 +19,7 @@ static const char *TAG = "task_orient";
 // Kp 加速度校正强度；Ki 偏置积分（过大会漂移，过小对温漂无效）。
 #define MAHONY_KP        1.0f
 #define MAHONY_KI        0.01f
+#define IMU_DIAG_LOG_INTERVAL_MS 1000
 
 static float q0 = 1.0f, q1 = 0.0f, q2 = 0.0f, q3 = 0.0f;
 static float ix = 0.0f, iy = 0.0f, iz = 0.0f;
@@ -148,7 +149,18 @@ void TaskOrientation_Run(void *arg) {
         if (dt <= 0.0f || dt > 0.1f) continue;  // 丢弃异常 dt
 
         mahony_update(s.gx, s.gy, s.gz, s.ax, s.ay, s.az, dt);
-        orientation_yaw_set(yaw_deg_from_quaternion());
+        float yaw_deg = yaw_deg_from_quaternion();
+        orientation_yaw_set(yaw_deg);
+
+        static TickType_t s_last_diag_tick = 0;
+        TickType_t now_tick = xTaskGetTickCount();
+        if ((now_tick - s_last_diag_tick) >= pdMS_TO_TICKS(IMU_DIAG_LOG_INTERVAL_MS)) {
+            s_last_diag_tick = now_tick;
+            float acc_norm = sqrtf(s.ax * s.ax + s.ay * s.ay + s.az * s.az);
+            ESP_LOGI(TAG,
+                     "IMU diag ax=%.2f ay=%.2f az=%.2f |a|=%.2f gx=%.3f gy=%.3f gz=%.3f yaw=%.1f",
+                     s.ax, s.ay, s.az, acc_norm, s.gx, s.gy, s.gz, yaw_deg);
+        }
 
         static uint32_t s_p0_cnt = 0;
         if (++s_p0_cnt % 2000 == 0) {

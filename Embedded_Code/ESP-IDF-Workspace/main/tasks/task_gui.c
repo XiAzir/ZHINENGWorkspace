@@ -31,7 +31,7 @@ void TaskGUI_Run(void *arg) {
             ESP_LOGI(TAG, "[P0] stack_hwm=%u bytes", uxTaskGetStackHighWaterMark(NULL) * 4);
         }
         ESP_LOGI(TAG,
-                 "Lvl=%-8s Cls=%-8s Conf=%3.0f%% Rel=%+.1f Wld=%+.1f TTC=%4.1fs SPL=%.0fdBA%s",
+                 "Lvl=%-8s Cls=%-8s Conf=%3.0f%% Rel=%+.1f Wld=%+.1f TTC=%4.1fs SPL_rel=%.0f%s",
                  s_level_text[d.level],
                  s_class_text[d.pred_class],
                  d.confidence * 100.0f,

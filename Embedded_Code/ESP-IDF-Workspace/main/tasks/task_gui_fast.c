@@ -17,6 +17,9 @@ void TaskGUI_Fast_Run(void *arg) {
     for (;;) {
         vTaskDelayUntil(&next, pdMS_TO_TICKS(GUI_FAST_TICK_MS));
 
+#if AUDIO_SINGLE_MIC_TEST_MODE
+        float beta = 0.0f;
+#else
         float theta_w = theta_world_get();
         float yaw     = orientation_yaw_get();
         float beta    = theta_w - yaw;
@@ -24,6 +27,7 @@ void TaskGUI_Fast_Run(void *arg) {
         // 归一到 [-180, 180]
         while (beta >  180.0f) beta -= 360.0f;
         while (beta < -180.0f) beta += 360.0f;
+#endif
 
         drv_oled_draw_arrow(beta);
 

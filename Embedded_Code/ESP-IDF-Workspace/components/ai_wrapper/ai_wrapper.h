@@ -6,7 +6,7 @@ extern "C" {
 #include <stdint.h>
 
 void AI_Init(void);
-void AI_Run(const int8_t *mel_feature, int *pred_class, float *confidence);
+void AI_Run(const int8_t *mel_feature, int *pred_class, float *confidence, float *score_gap);
 
 #ifdef __cplusplus
 }

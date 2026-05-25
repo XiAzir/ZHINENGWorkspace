@@ -11,13 +11,16 @@
 #define DSP_HOP_LEN         512
 #define DSP_N_MELS          64
 #define DSP_N_BINS          513     // FFT_LEN/2 + 1
+#ifndef MEL_FRAMES
+#define MEL_FRAMES          32
+#endif
 #define DSP_IIR_CUTOFF_HZ   100
 #define DSP_IIR_NUM_STAGES  2
 #define DSP_MIC_SPACING_M   0.05f
 #define DSP_SPEED_OF_SOUND  343.0f
-#define DSP_INT8_SCALE      0.02773f
-#define DSP_INT8_OFFSET     (-128)
-#define DSP_SPL_CAL_DB      94.0f
+#define DSP_INT8_SCALE      0.0078125f
+#define DSP_INT8_OFFSET     0
+#define DSP_SPL_CAL_DB      0.0f    // 未做声压校准前仅输出相对 dB，不能当真实 dBA
 #define DOA_PHAT_EPS        1e-6f
 
 // ── Doppler 跟踪参数 ────────────────────────────────────────

@@ -16,6 +16,7 @@ typedef struct {
 // ── 特征帧（task_doa_feature → task_ai）────────────────────
 typedef struct {
     int8_t       mel_feature[MEL_BINS * MEL_FRAMES];
+    bool         audio_valid;
     float        doa_angle_deg;    // 相对眼镜朝向（传感器坐标系）
     float        doa_world_deg;    // 绝对锚定：doa_angle_deg + Yaw_0（3DoF）
     ThreatInfo_t threat;

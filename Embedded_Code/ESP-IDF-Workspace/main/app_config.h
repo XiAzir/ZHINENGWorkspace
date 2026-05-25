@@ -4,6 +4,7 @@
 #define AUDIO_SAMPLE_RATE    16000
 #define AUDIO_FRAME_LEN      512    // DMA 每次 DMA 中断的采样点数
 #define NUM_DMA_BUFFERS      4      // DMA 描述符数量
+#define AUDIO_DIAG_LOG_INTERVAL_MS 1000
 
 // ── DSP 参数（与 Python 端严格对应）────────────────────────
 #define DSP_FFT_LEN          1024
@@ -14,9 +15,9 @@
 #define DSP_IIR_NUM_STAGES   2
 #define DSP_MIC_SPACING_M    0.05f
 #define DSP_SPEED_OF_SOUND   343.0f
-#define DSP_INT8_SCALE       0.02773f
-#define DSP_INT8_OFFSET      (-128)
-#define DSP_SPL_CAL_DB       94.0f  // 校准常数（dBSPL，待硬件标定）
+#define DSP_INT8_SCALE       0.0078125f   // 对齐 audiosense.json 的模型输入 scale
+#define DSP_INT8_OFFSET      0
+#define DSP_SPL_CAL_DB       0.0f   // 未做声压校准前仅输出相对 dB，不能当真实 dBA
 
 // ── Mel 特征帧参数 ──────────────────────────────────────────
 #define MEL_FRAMES           32
@@ -33,6 +34,9 @@
 #define DSP_DOPPLER_HIST_LEN 8        // 历史帧数
 #define DSP_SPL_RING_LEN     62       // ~2s @ 32ms/帧
 #define DOA_PHAT_EPS         1e-6f
+
+// ── 上板测试策略 ───────────────────────────────────────────
+#define AUDIO_SINGLE_MIC_TEST_MODE 0   // 双麦真实链路：活动 DATA 线的 LOW/HIGH slot 进入 DOA/AI
 
 // ── RTOS 任务栈（单位：字节）────────────────────────────────
 #define TASK_STACK_AUDIO     16384  // 包含音频数据缓冲转移
@@ -51,5 +55,5 @@
 #define GUI_FAST_TICK_MS     16      // ≈62.5Hz 箭头渲染
 
 // ── 功能宏 ──────────────────────────────────────────────────
-#define USE_SIMULATION       // 取消注释以使用仿真音频驱动
+// #define USE_SIMULATION       // 取消注释以使用仿真音频驱动
 // #define FEATURE_BLE          // 取消注释以启用 BLE 任务

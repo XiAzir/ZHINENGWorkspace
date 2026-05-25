@@ -26,10 +26,14 @@ static DangerLevel_t compute_danger(int pred_class, float confidence,
 
     DangerLevel_t base = s_danger_matrix[pred_class][(int)tl];
 
+#if AUDIO_SINGLE_MIC_TEST_MODE
+    (void)doa_angle;
+#else
     // 正前方声源降一档（听障用户视觉可见，优先保留外围注意力）
     if (fabsf(doa_angle) <= 60.0f && base > DANGER_SAFE) {
         base = (DangerLevel_t)((int)base - 1);
     }
+#endif
     return base;
 }
 

@@ -7,8 +7,8 @@
 
 static const char *TAG = "dsp_mel";
 
-static float s_hamming[DSP_FFT_LEN];
-static bool  s_hamming_ready = false;
+static float s_window[DSP_FFT_LEN];
+static bool  s_window_ready = false;
 
 extern const float mel_filterbank[DSP_N_MELS][DSP_N_BINS];
 
@@ -16,11 +16,11 @@ esp_err_t dsp_mel_init(DSPMel_t *inst) {
     esp_err_t ret = dsp_fft_ensure_init();
     if (ret != ESP_OK) return ret;
 
-    if (!s_hamming_ready) {
+    if (!s_window_ready) {
         for (int i = 0; i < DSP_FFT_LEN; i++) {
-            s_hamming[i] = 0.54f - 0.46f * cosf(2.0f * M_PI * i / (DSP_FFT_LEN - 1));
+            s_window[i] = 0.5f - 0.5f * cosf(2.0f * M_PI * i / (DSP_FFT_LEN - 1));
         }
-        s_hamming_ready = true;
+        s_window_ready = true;
     }
     inst->initialized = true;
     ESP_LOGD(TAG, "Mel init OK, FFT_LEN=%d N_MELS=%d", DSP_FFT_LEN, DSP_N_MELS);
@@ -32,7 +32,7 @@ void dsp_mel_compute(DSPMel_t *inst, const float *input, float *log_mel_out) {
     //   dsps_fft2r_rfft_fc32（实数 FFT）可省 ~50% 内存 + ~50% 算力。
     // 步骤 1：汉明加窗 + 打包为复数格式（虚部=0）
     for (int i = 0; i < DSP_FFT_LEN; i++) {
-        inst->fft_buf[2 * i]     = input[i] * s_hamming[i];
+        inst->fft_buf[2 * i]     = input[i] * s_window[i];
         inst->fft_buf[2 * i + 1] = 0.0f;
     }
 
